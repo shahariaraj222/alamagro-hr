@@ -1,0 +1,13 @@
+{
+  "name": "Alamagro হাজিরা ও বেতন",
+  "short_name": "Alamagro HR",
+  "description": "কর্মচারী হাজিরা, অগ্রিম ও বেতন পেমেন্ট",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f4efe4",
+  "theme_color": "#1f4d32",
+  "lang": "bn",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

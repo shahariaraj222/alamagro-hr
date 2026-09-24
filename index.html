@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Alamagro হাজিরা ও বেতন</title>
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#1f4d32" />
+  <link rel="icon" href="./icons/icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700;800&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/styles.css" />
+</head>
+<body>
+  <div id="loginScreen" class="login-wrap">
+    <form class="card login-card" onsubmit="doLogin(event)">
+      <div class="mark">আ</div>
+      <h2>Alamagro হাজিরা ও বেতন</h2>
+      <p class="muted">মালিক বা ম্যানেজার অ্যাকাউন্ট দিয়ে ঢুকুন</p>
+      <div class="field"><label>ইমেইল</label><input id="email" type="email" required autocomplete="username" /></div>
+      <div class="field"><label>পাসওয়ার্ড</label><input id="password" type="password" required autocomplete="current-password" /></div>
+      <button class="btn" type="submit" style="width:100%">লগইন</button>
+    </form>
+  </div>
+
+  <div id="appShell" class="app-shell hidden">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">আ</div>
+        <div>
+          <h1>Alamagro HR</h1>
+          <small>হাজিরা · অগ্রিম · বেতন</small>
+        </div>
+      </div>
+      <div class="who" id="whoLine"></div>
+      <button class="btn gold sm" onclick="logout()">লগআউট</button>
+    </header>
+
+    <nav class="nav">
+      <button data-page="dash" class="active" onclick="go('dash')">ড্যাশবোর্ড</button>
+      <button data-page="emp" onclick="go('emp')">কর্মী</button>
+      <button data-page="att" onclick="go('att')">হাজিরা</button>
+      <button data-page="adv" onclick="go('adv')">অগ্রিম</button>
+      <button data-page="pay" onclick="go('pay')">পেমেন্ট</button>
+      <button data-page="rep" onclick="go('rep')">রিপোর্ট</button>
+      <button data-page="set" class="owner-only" onclick="go('set')">সেটিংস</button>
+    </nav>
+
+    <section class="page active" id="page-dash">
+      <p class="muted">আজ <b id="dashDate"></b></p>
+      <div class="grid cols-4">
+        <div class="card stat"><div class="n" id="stActive">0</div><div class="l">এক্টিভ কর্মী</div></div>
+        <div class="card stat"><div class="n" id="stP">0</div><div class="l">আজ প্রেজেন্ট</div></div>
+        <div class="card stat"><div class="n" id="stA">0</div><div class="l">আজ অ্যাবসেন্ট</div></div>
+        <div class="card stat"><div class="n" id="stPend">0</div><div class="l">এন্ট্রি বাকি</div></div>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <h3>কে কী ইনপুট দিয়েছে</h3>
+        <div class="list" id="dashAudit"></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-emp">
+      <div class="card">
+        <h2 id="empFormTitle">নতুন কর্মচারী</h2>
+        <form onsubmit="saveEmp(event)">
+          <input type="hidden" id="empEditId" />
+          <div class="grid cols-2">
+            <div class="field"><label>নাম *</label><input id="fName" required /></div>
+            <div class="field"><label>মোবাইল</label><input id="fMobile" inputmode="tel" /></div>
+            <div class="field"><label>মাসিক বেতন *</label><input id="fSalary" type="number" min="0" required /></div>
+            <div class="field"><label>যোগদান</label><input id="fJoin" type="date" /></div>
+            <div class="field"><label>ঠিকানা</label><input id="fAddress" /></div>
+            <div class="field"><label>NID (অপশনাল)</label><input id="fNid" /></div>
+            <div class="field"><label>গার্ডিয়ান নাম</label><input id="fGName" /></div>
+            <div class="field"><label>গার্ডিয়ান মোবাইল</label><input id="fGMobile" /></div>
+          </div>
+          <div class="field"><label>ছবি</label><input id="fPhoto" type="file" accept="image/*" /></div>
+          <img id="photoPrev" class="photo-preview hidden" alt="" />
+          <div class="row">
+            <button class="btn" type="submit">সেভ</button>
+            <button class="btn ghost" type="button" onclick="clearEmpForm()">নতুন ফর্ম</button>
+          </div>
+        </form>
+        <div id="empStatusBox" class="hidden" style="margin-top:12px">
+          <p class="muted">স্ট্যাটাস · পাওনা থাকলে ক্লোজ হবে না</p>
+          <div class="row">
+            <button class="btn sm" type="button" onclick="changeStatus('active')">এক্টিভ</button>
+            <button class="btn gold sm" type="button" onclick="changeStatus('suspended')">সাসপেন্ড</button>
+            <button class="btn danger sm owner-only" type="button" onclick="changeStatus('closed')">ক্লোজ</button>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <div class="row">
+          <input class="search" id="empSearch" placeholder="নাম / আইডি / মোবাইল" oninput="renderEmp()" />
+          <select id="empFilter" onchange="renderEmp()">
+            <option value="">সব</option>
+            <option value="active">এক্টিভ</option>
+            <option value="suspended">সাসপেন্ড</option>
+            <option value="closed">ক্লোজ</option>
+          </select>
+        </div>
+        <div class="list" id="empList"></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-att">
+      <div class="card">
+        <h2>হাজিরা</h2>
+        <div class="hint">সাপ্তাহিক ছুটির দিন প্রেজেন্ট দিন—নাহলে সেই দিনের বেতন কাটবে। মাসের হিসাব ২৮/২৯/৩০/৩১ দিনে ভাগ হয়।</div>
+        <div class="row">
+          <div class="field" style="margin:0"><label>তারিখ</label><input id="attDate" type="date" onchange="attDraft={};renderAtt()" /></div>
+          <span class="muted" id="attHint"></span>
+        </div>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <h3>বাকি এন্ট্রি</h3>
+        <p class="muted">এক বা একাধিক P/A টিক দিয়ে সাবমিট করুন। সাবমিটের পর ম্যানেজার আর বদলাতে পারবেন না।</p>
+        <div class="list" id="attPending"></div>
+        <button class="btn" style="margin-top:12px;width:100%" onclick="submitAtt()">নির্বাচিতগুলো সাবমিট</button>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <h3>জমা হওয়া</h3>
+        <div class="list" id="attDone"></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-adv">
+      <div class="card">
+        <h2>অগ্রিম</h2>
+        <form onsubmit="saveAdv(event)">
+          <div class="field"><label>কর্মী</label><select id="advEmp"></select></div>
+          <div class="grid cols-2">
+            <div class="field"><label>টাকা</label><input id="advAmt" type="number" min="1" required /></div>
+            <div class="field"><label>তারিখ</label><input id="advDate" type="date" /></div>
+          </div>
+          <div class="field"><label>নোট</label><input id="advNote" /></div>
+          <button class="btn" type="submit">অগ্রিম সেভ</button>
+        </form>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <h3>সাম্প্রতিক অগ্রিম</h3>
+        <div class="list" id="advList"></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-pay">
+      <div class="card">
+        <h2>ক্যাশ পেমেন্ট</h2>
+        <div class="field"><label>মাস</label><input id="payMonth" type="month" onchange="renderPay()" /></div>
+        <div style="overflow:auto"><table id="payTable"></table></div>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <h3>এই মাসের পেমেন্ট লগ</h3>
+        <div class="list" id="payLogs"></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-rep">
+      <div class="card">
+        <h2>রিপোর্ট</h2>
+        <div class="grid cols-2">
+          <div class="field"><label>মাস</label><input id="repMonth" type="month" onchange="renderRep()" /></div>
+          <div class="field"><label>কর্মী সার্চ</label><input id="repQ" oninput="renderRep()" placeholder="নাম বা আইডি" /></div>
+        </div>
+        <button class="btn" onclick="downloadExcel()">এক্সেল ডাউনলোড</button>
+        <div id="repBox" style="margin-top:12px"></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-set">
+      <div id="setBody">
+        <div class="card">
+          <h2>ইনক্রিমেন্ট / বেতন</h2>
+          <form onsubmit="saveInc(event)">
+            <div class="field"><label>কর্মী</label><select id="setEmp"></select></div>
+            <div class="grid cols-2">
+              <div class="field"><label>নতুন বেতন</label><input id="incAmt" type="number" required /></div>
+              <div class="field"><label>কার্যকর তারিখ</label><input id="incFrom" type="date" required /></div>
+            </div>
+            <div class="field"><label>নোট</label><input id="incNote" placeholder="২০২৬ ইনক্রিমেন্ট" /></div>
+            <button class="btn" type="submit">সেভ</button>
+          </form>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <h2>ম্যানেজার যোগ</h2>
+          <form onsubmit="addMgr(event)">
+            <div class="field"><label>নাম</label><input id="mgrName" required /></div>
+            <div class="field"><label>ইমেইল</label><input id="mgrEmail" type="email" required /></div>
+            <div class="field"><label>পাসওয়ার্ড</label><input id="mgrPass" required /></div>
+            <button class="btn" type="submit">যোগ করুন</button>
+          </form>
+          <div class="list" id="userList" style="margin-top:10px"></div>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <h2>ব্যাকআপ</h2>
+          <p class="muted">ডেটা এই ডিভাইসের ব্রাউজারে থাকে। নিয়মিত JSON ব্যাকআপ নামিয়ে রাখুন—এটাই আপনার ক্লাউড কপি।</p>
+          <div class="row">
+            <button class="btn ghost" type="button" onclick="backupDown()">ব্যাকআপ ডাউনলোড</button>
+            <label class="btn gold">রিস্টোর<input type="file" accept="application/json" hidden onchange="backupUp(event)" /></label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <p class="footer-note">Alamagro · হাজিরা সাবমিটের পর ম্যানেজার এডিট করতে পারবেন না</p>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="./js/db.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>
